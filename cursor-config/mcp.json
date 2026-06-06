@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "testseer": {
+      "command": "node",
+      "args": ["dist/index.js"],
+      "cwd": "/Users/mthigale/Documents/Claude/Projects/Test Planning/testseer-mcp",
+      "env": {
+        "TESTSEER_URL": "http://localhost:8080",
+        "GITHUB_TOKEN": "ghp_your_token_here"
+      }
+    }
+  }
+}

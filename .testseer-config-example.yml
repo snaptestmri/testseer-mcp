@@ -1,0 +1,7 @@
+# .testseer/config.yml
+# Created by TestSeer after service registration.
+# Commit this file — it tells the Cursor agent which service this repo belongs to.
+serviceId: "a3f2e1b4-9c8d-4e2f-b1a3-7d6e5f4c3b2a"
+orgId: "acme"
+repo: "orders"
+server: "https://testseer.internal"
