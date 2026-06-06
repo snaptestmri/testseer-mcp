@@ -85,12 +85,12 @@ See [`.testseer-config-example.yml`](.testseer-config-example.yml) for the full 
 
 ## Known limitations (2026-06-05)
 
-- **`testseer_get_gaps`** — returns 404 until backend ships `GET /v1/gaps` (see [P12 plan](https://github.com/snaptestmri/testseer-backend/blob/main/docs/archive/plans/2026-06-05-p12-gap-detection.md)).
+- **`testseer_get_gaps`** — returns 404 until backend ships `GET /v1/gaps` (see [P12 plan](../testseer-backend/docs/archive/plans/2026-06-05-p12-gap-detection.md)).
 - **`testseer_get_service_description`** — requires `ANTHROPIC_ENABLED=true` on the backend; otherwise 503.
 - **`testseer_get_changed_endpoints`** — uses the **latest index**, not the PR commit SHA (by design for unindexed PR heads).
 - **IntelliJ plugin** — does not use this MCP server; local PSI only.
 
-See also: [testseer-backend documentation](https://github.com/snaptestmri/testseer-backend/tree/main/docs).
+See also: [CURRENT_STATUS.md](../docs/CURRENT_STATUS.md) (platform repo).
 
 ## Environment variables
 
