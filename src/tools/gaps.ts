@@ -27,7 +27,7 @@ export async function handleGaps(args: Record<string, string>) {
   }
 
   try {
-    const envelope = await getGaps(serviceId);
+    const { data: envelope } = await getGaps(serviceId);
 
     if (envelope.freshnessStatus === "NOT_INDEXED") {
       return {

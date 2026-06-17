@@ -35,7 +35,7 @@ export async function handleImpact(args: Record<string, string>) {
   }
 
   try {
-    const envelope = await getImpact(serviceId, commitSha);
+    const { data: envelope } = await getImpact(serviceId, commitSha);
 
     if (envelope.freshnessStatus === "NOT_INDEXED") {
       return {

@@ -57,7 +57,7 @@ export async function handleChangedEndpoints(args: Record<string, string>) {
       };
     }
 
-    const envelope = await getSymbolsByFile(serviceId, javaFiles, orgId, repo);
+    const { data: envelope } = await getSymbolsByFile(serviceId, javaFiles, orgId, repo);
 
     if (envelope.freshnessStatus === "NOT_INDEXED") {
       return {

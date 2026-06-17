@@ -3,9 +3,12 @@
     "testseer": {
       "command": "node",
       "args": ["dist/index.js"],
-      "cwd": "/Users/mthigale/Documents/Claude/Projects/Test Planning/testseer-mcp",
+      "cwd": "/absolute/path/to/testseer/testseer-mcp",
       "env": {
         "TESTSEER_URL": "http://localhost:8080",
+        "TESTSEER_ORG_ID": "your-org-id",
+        "TESTSEER_TRACE_SHORT_ID": "DEV_T.YOUR_TOPIC",
+        "TESTSEER_TRACE_ENV": "pdn",
         "GITHUB_TOKEN": "ghp_your_token_here"
       }
     }

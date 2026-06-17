@@ -27,7 +27,7 @@ export async function handleIndex(args: Record<string, string>) {
   }
 
   try {
-    const result = await triggerIndex(serviceId, commitSha);
+    const { data: result } = await triggerIndex(serviceId, commitSha);
     return {
       content: [
         {

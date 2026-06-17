@@ -23,7 +23,7 @@ export const serviceTools: Tool[] = [
   {
     name: "testseer_get_service_description",
     description:
-      "Get the LLM-generated plain-English business description for a service, derived from its indexed Javadoc, method signatures, and state machine enums. Requires ANTHROPIC_ENABLED=true on the server.",
+      "Get the cached plain-English business description for a service when one has been stored in service metadata.",
     inputSchema: {
       type: "object",
       properties: {
@@ -38,7 +38,7 @@ export async function handleServiceTool(name: string, args: Record<string, strin
   try {
     switch (name) {
       case "testseer_list_services": {
-        const services = await listServices();
+        const { data: services } = await listServices();
         const lines = services.map(
           (s) =>
             `- **${s.serviceName}** (${s.serviceId}) — ${s.orgId}/${s.repo} [${s.buildTool}] ${s.enabled ? "✓" : "disabled"}`
@@ -65,7 +65,7 @@ export async function handleServiceTool(name: string, args: Record<string, strin
             isError: true,
           };
         }
-        const envelope = await getServiceStatus(serviceId);
+        const { data: envelope } = await getServiceStatus(serviceId);
         const text = `Service: ${serviceId}\nStatus: **${envelope.freshnessStatus}**\nLast indexed: ${envelope.indexedAt ?? envelope.data?.indexedAt ?? "never"}\nCommit: ${envelope.commitSha ?? envelope.data?.commitSha ?? "unknown"}`;
         return { content: [{ type: "text" as const, text }] };
       }
@@ -78,9 +78,9 @@ export async function handleServiceTool(name: string, args: Record<string, strin
             isError: true,
           };
         }
-        const description = await getServiceDescription(serviceId);
+        const { data: description } = await getServiceDescription(serviceId);
         return {
-          content: [{ type: "text" as const, text: `## Business Description\n\n${description}` }],
+          content: [{ type: "text" as const, text: `## Business Description\n\n${description.description}` }],
         };
       }
 
