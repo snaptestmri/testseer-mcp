@@ -43,14 +43,14 @@ describe("context helpers", () => {
     const project = join(tmpDir, "git-repo");
     mkdirSync(project, { recursive: true });
     execSync("git init", { cwd: project, stdio: "pipe" });
-    execSync("git remote add origin git@github.com:quotient/platform-orders.git", {
+    execSync("git remote add origin git@github.com:acme/platform-orders.git", {
       cwd: project,
       stdio: "pipe",
     });
 
     const { parseGitRemote } = await import("../dist/context.js");
     assert.deepEqual(parseGitRemote(project), {
-      orgId: "quotient",
+      orgId: "acme",
       repo: "platform-orders",
     });
   });

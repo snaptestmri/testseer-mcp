@@ -36,7 +36,7 @@ export const dependencyTreeTool = {
       scope: { type: "string", description: "Maven scope (default runtime)" },
       depth: { type: "number", description: "Transitive hop depth (default 3)" },
       hydrate: { type: "boolean", description: "Include nodes[] and edges[] (default true)" },
-      includeExternal: { type: "boolean", description: "Include non-com.quotient artifacts (default true)" },
+      includeExternal: { type: "boolean", description: "Include non-com.example artifacts (default true)" },
     },
     required: ["serviceId"],
   },

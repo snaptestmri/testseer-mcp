@@ -175,7 +175,7 @@ describe("MCP tool handlers", () => {
     mockJson("GET", `${BASE}/registry/services`, [
       {
         serviceId: "svc-orders",
-        orgId: "quotient",
+        orgId: "acme",
         repo: "platform-orders",
         serviceName: "orders-svc",
         moduleType: "SERVICE",
@@ -258,7 +258,7 @@ describe("MCP tool handlers", () => {
     mkdirSync(join(project, ".testseer"), { recursive: true });
     writeFileSync(
       join(project, ".testseer", "config.yml"),
-      'serviceId: svc-from-config\norgId: quotient\nrepo: my-repo\n'
+      'serviceId: svc-from-config\norgId: acme\nrepo: my-repo\n'
     );
 
     try {
@@ -276,7 +276,7 @@ describe("MCP tool handlers", () => {
   it("testseer_detect_service resolves service from registry via git remote", async () => {
     const project = mkdtempSync(join(tmpdir(), "testseer-detect-git-"));
     execSync("git init", { cwd: project, stdio: "pipe" });
-    execSync("git remote add origin git@github.com:quotient/my-service.git", {
+    execSync("git remote add origin git@github.com:acme/my-service.git", {
       cwd: project,
       stdio: "pipe",
     });
@@ -284,7 +284,7 @@ describe("MCP tool handlers", () => {
     mockJson("GET", `${BASE}/registry/services`, [
       {
         serviceId: "svc-registry",
-        orgId: "quotient",
+        orgId: "acme",
         repo: "my-service",
         serviceName: "my-service",
         moduleType: "SERVICE",
@@ -437,88 +437,88 @@ describe("MCP tool handlers", () => {
   // ── Messaging ───────────────────────────────────────────────────────────────
 
   it("testseer_get_pubsub_inventory", async () => {
-    mockJson("GET", `${BASE}/v1/facts/pubsub?serviceId=svc-1&env=pdn`, {
+    mockJson("GET", `${BASE}/v1/facts/pubsub?serviceId=svc-1&env=staging`, {
       freshnessStatus: "CURRENT",
-      data: [{ shortId: "PDN_T.OFFER_UPDATE", role: "PUBLISH" }],
+      data: [{ shortId: "DEV_T.ORDER_UPDATED", role: "PUBLISH" }],
     });
 
     const { handlePubSubInventory } = await import("../dist/tools/messaging.js");
-    const result = await handlePubSubInventory({ serviceId: "svc-1", env: "pdn" });
+    const result = await handlePubSubInventory({ serviceId: "svc-1", env: "staging" });
     assert.match(result.content[0].text, /Pub\/Sub inventory/);
     const body = JSON.parse(result.content[1].text.slice("Full JSON:\n".length));
-    assert.equal(body.data[0].shortId, "PDN_T.OFFER_UPDATE");
+    assert.equal(body.data[0].shortId, "DEV_T.ORDER_UPDATED");
   });
 
   it("testseer_get_pubsub_inventory forwards liveVerify", async () => {
-    mockJson("GET", `${BASE}/v1/facts/pubsub?serviceId=svc-1&env=pdn&liveVerify=true`, {
+    mockJson("GET", `${BASE}/v1/facts/pubsub?serviceId=svc-1&env=staging&liveVerify=true`, {
       freshnessStatus: "CURRENT",
       livePubSubStatus: "DISABLED",
-      data: [{ shortId: "PDN_S.FOO", role: "SUBSCRIBE" }],
+      data: [{ shortId: "DEV_S.FOO", role: "SUBSCRIBE" }],
     });
 
     const { handlePubSubInventory } = await import("../dist/tools/messaging.js");
     const result = await handlePubSubInventory({
       serviceId: "svc-1",
-      env: "pdn",
+      env: "staging",
       liveVerify: "true",
     });
     assert.match(result.content[0].text, /Pub\/Sub inventory/);
   });
 
   it("testseer_get_flow_gates forwards filters", async () => {
-    mockJson("GET", `${BASE}/v1/facts/gates?serviceId=svc-1&env=pdn&flowStep=HYVEE_ADAPTER`, {
+    mockJson("GET", `${BASE}/v1/facts/gates?serviceId=svc-1&env=staging&flowStep=HANDLER_A`, {
       freshnessStatus: "CURRENT",
-      data: [{ gateKey: "HYVEE_ENABLED", requiredValue: "true" }],
+      data: [{ gateKey: "WEBHOOK_ENABLED", requiredValue: "true" }],
     });
 
     const { handleFlowGates } = await import("../dist/tools/messaging.js");
     const result = await handleFlowGates({
       serviceId: "svc-1",
-      env: "pdn",
-      flowStep: "HYVEE_ADAPTER",
+      env: "staging",
+      flowStep: "HANDLER_A",
     });
     const body = JSON.parse(result.content[0].text);
-    assert.equal(body.data[0].gateKey, "HYVEE_ENABLED");
+    assert.equal(body.data[0].gateKey, "WEBHOOK_ENABLED");
   });
 
   it("testseer_trace_topic_flow crossRepo mode", async () => {
     mockJson(
       "GET",
-      `${BASE}/v1/graph/event-flow/cross-repo?orgId=quotient&shortId=PDN_T.RIQ_OFFER_EVENT&env=pdn`,
+      `${BASE}/v1/graph/event-flow/cross-repo?orgId=acme&shortId=DEV_T.ORDER_CREATED&env=staging`,
       {
         schemaVersion: "1.0",
         freshnessStatus: "CURRENT",
-        data: { hops: [{ order: 1, topicShortId: "PDN_T.RIQ_OFFER_EVENT" }] },
+        data: { hops: [{ order: 1, topicShortId: "DEV_T.ORDER_CREATED" }] },
       }
     );
 
     const { handleTraceTopicFlow } = await import("../dist/tools/messaging.js");
     const result = await handleTraceTopicFlow({
       crossRepo: "true",
-      orgId: "quotient",
-      shortId: "PDN_T.RIQ_OFFER_EVENT",
-      env: "pdn",
+      orgId: "acme",
+      shortId: "DEV_T.ORDER_CREATED",
+      env: "staging",
     });
     assert.match(result.content[0].text, /Cross-repo event flow/);
     const body = JSON.parse(result.content[1].text.slice("Full JSON:\n".length));
-    assert.equal(body.data.hops[0].topicShortId, "PDN_T.RIQ_OFFER_EVENT");
+    assert.equal(body.data.hops[0].topicShortId, "DEV_T.ORDER_CREATED");
   });
 
   it("testseer_trace_topic_flow crossRepo uses narrative when present", async () => {
     mockJson(
       "GET",
-      `${BASE}/v1/graph/event-flow/cross-repo?orgId=quotient&shortId=PDN_T.RIQ_OFFER_EVENT&env=pdn`,
+      `${BASE}/v1/graph/event-flow/cross-repo?orgId=acme&shortId=DEV_T.ORDER_CREATED&env=staging`,
       {
         schemaVersion: "1.0",
         freshnessStatus: "CURRENT",
         data: {
-          startTopic: "PDN_T.RIQ_OFFER_EVENT",
-          envLane: "pdn",
-          hops: [{ order: 1, topicShortId: "PDN_T.RIQ_OFFER_EVENT" }],
+          startTopic: "DEV_T.ORDER_CREATED",
+          envLane: "staging",
+          hops: [{ order: 1, topicShortId: "DEV_T.ORDER_CREATED" }],
           narrative: [
-            "Cross-repo trace from PDN_T.RIQ_OFFER_EVENT (1 hop(s), 0 gap(s))",
+            "Cross-repo trace from DEV_T.ORDER_CREATED (1 hop(s), 0 gap(s))",
             "",
-            "Hop 1 · PDN_T.RIQ_OFFER_EVENT [PUBSUB]",
+            "Hop 1 · DEV_T.ORDER_CREATED [PUBSUB]",
           ],
         },
       }
@@ -527,33 +527,33 @@ describe("MCP tool handlers", () => {
     const { handleTraceTopicFlow } = await import("../dist/tools/messaging.js");
     const result = await handleTraceTopicFlow({
       crossRepo: "true",
-      orgId: "quotient",
-      shortId: "PDN_T.RIQ_OFFER_EVENT",
-      env: "pdn",
+      orgId: "acme",
+      shortId: "DEV_T.ORDER_CREATED",
+      env: "staging",
     });
-    assert.match(result.content[0].text, /Hop 1 · PDN_T\.RIQ_OFFER_EVENT/);
+    assert.match(result.content[0].text, /Hop 1 · PDN_T\.ORDER_EVENT/);
     assert.doesNotMatch(result.content[0].text, /### Hop 1 —/);
   });
 
   it("testseer_trace_topic_flow crossRepo forwards liveVerify", async () => {
     mockJson(
       "GET",
-      `${BASE}/v1/graph/event-flow/cross-repo?orgId=quotient&shortId=PDN_T.RIQ_OFFER_EVENT&env=pdn&liveVerify=true`,
+      `${BASE}/v1/graph/event-flow/cross-repo?orgId=acme&shortId=DEV_T.ORDER_CREATED&env=staging&liveVerify=true`,
       {
         schemaVersion: "1.0",
         freshnessStatus: "CURRENT",
         livePubSubStatus: "OK",
         livePubSubVerifiedCount: 2,
-        data: { hops: [{ order: 1, topicShortId: "PDN_T.RIQ_OFFER_EVENT", subscribers: [] }] },
+        data: { hops: [{ order: 1, topicShortId: "DEV_T.ORDER_CREATED", subscribers: [] }] },
       }
     );
 
     const { handleTraceTopicFlow } = await import("../dist/tools/messaging.js");
     const result = await handleTraceTopicFlow({
       crossRepo: "true",
-      orgId: "quotient",
-      shortId: "PDN_T.RIQ_OFFER_EVENT",
-      env: "pdn",
+      orgId: "acme",
+      shortId: "DEV_T.ORDER_CREATED",
+      env: "staging",
       liveVerify: "true",
     });
     assert.match(result.content[0].text, /Live GCP Pub\/Sub/);
@@ -562,22 +562,22 @@ describe("MCP tool handlers", () => {
   it("testseer_trace_topic_flow single-repo mode", async () => {
     mockJson(
       "GET",
-      `${BASE}/v1/graph/event-flow?serviceId=svc-1&env=pdn&shortId=PDN_T.FOO`,
+      `${BASE}/v1/graph/event-flow?serviceId=svc-1&env=staging&shortId=DEV_T.FOO`,
       {
         freshnessStatus: "CURRENT",
-        data: { topicShortId: "PDN_T.FOO", steps: [], gaps: [] },
+        data: { topicShortId: "DEV_T.FOO", steps: [], gaps: [] },
       }
     );
 
     const { handleTraceTopicFlow } = await import("../dist/tools/messaging.js");
     const result = await handleTraceTopicFlow({
       serviceId: "svc-1",
-      shortId: "PDN_T.FOO",
-      env: "pdn",
+      shortId: "DEV_T.FOO",
+      env: "staging",
     });
     assert.match(result.content[0].text, /Single-service event flow/);
     const body = JSON.parse(result.content[1].text.slice("Full JSON:\n".length));
-    assert.equal(body.data.topicShortId, "PDN_T.FOO");
+    assert.equal(body.data.topicShortId, "DEV_T.FOO");
   });
 
   it("testseer_trace_topic_flow crossRepo=true requires shortId", async () => {
@@ -589,7 +589,7 @@ describe("MCP tool handlers", () => {
 
   it("testseer_trace_topic_flow crossRepo=true requires orgId", async () => {
     const { handleTraceTopicFlow } = await import("../dist/tools/messaging.js");
-    const result = await handleTraceTopicFlow({ crossRepo: "true", shortId: "PDN_T.FOO" });
+    const result = await handleTraceTopicFlow({ crossRepo: "true", shortId: "DEV_T.FOO" });
     assert.equal(result.isError, true);
   });
 
@@ -605,22 +605,22 @@ describe("MCP tool handlers", () => {
   it("testseer_get_external_endpoints forwards optional filters", async () => {
     mockJson(
       "GET",
-      `${BASE}/v1/facts/external-endpoints?serviceId=svc-1&env=pdn&partner=hyvee&flowStep=HYVEE_ADAPTER`,
+      `${BASE}/v1/facts/external-endpoints?serviceId=svc-1&env=staging&partner=webhook&flowStep=HANDLER_A`,
       {
         freshnessStatus: "CURRENT",
-        data: [{ partner: "hyvee", url: "https://partner.example/offers" }],
+        data: [{ partner: "webhook", url: "https://partner.example/offers" }],
       }
     );
 
     const { handleExternalEndpoints } = await import("../dist/tools/external-endpoints.js");
     const result = await handleExternalEndpoints({
       serviceId: "svc-1",
-      env: "pdn",
-      partner: "hyvee",
-      flowStep: "HYVEE_ADAPTER",
+      env: "staging",
+      partner: "webhook",
+      flowStep: "HANDLER_A",
     });
     const body = JSON.parse(result.content[0].text);
-    assert.equal(body.data[0].partner, "hyvee");
+    assert.equal(body.data[0].partner, "webhook");
   });
 
   // ── Entry triggers ──────────────────────────────────────────────────────────
@@ -643,16 +643,16 @@ describe("MCP tool handlers", () => {
   it("testseer_get_entry_triggers forwards optional filters", async () => {
     mockJson(
       "GET",
-      `${BASE}/v1/facts/entry-triggers?serviceId=svc-1&env=pdn&triggerKind=WEBHOOK_INBOUND&actor=freedom&boundary=EXTERNAL`,
+      `${BASE}/v1/facts/entry-triggers?serviceId=svc-1&env=staging&triggerKind=WEBHOOK_INBOUND&actor=external&boundary=EXTERNAL`,
       { freshnessStatus: "CURRENT", data: [] }
     );
 
     const { handleEntryTriggers } = await import("../dist/tools/entry-triggers.js");
     const result = await handleEntryTriggers({
       serviceId: "svc-1",
-      env: "pdn",
+      env: "staging",
       triggerKind: "WEBHOOK_INBOUND",
-      actor: "freedom",
+      actor: "external",
       boundary: "EXTERNAL",
     });
     assert.equal(result.isError, undefined);
@@ -663,11 +663,11 @@ describe("MCP tool handlers", () => {
   it("testseer_get_entry_triggers reverse impact uses impact endpoint", async () => {
     mockJson(
       "GET",
-      `${BASE}/v1/graph/entry-flow/impact?orgId=quotient&handlerFqn=com.example.Foo&env=pdn`,
+      `${BASE}/v1/graph/entry-flow/impact?orgId=acme&handlerFqn=com.example.Foo&env=staging`,
       {
         freshnessStatus: "CURRENT",
         data: {
-          orgId: "quotient",
+          orgId: "acme",
           handlerFqn: "com.example.Foo",
           triggers: [{ matchKind: "EXACT", serviceId: "svc-1", trigger: { triggerId: "t-1" } }],
         },
@@ -676,9 +676,9 @@ describe("MCP tool handlers", () => {
 
     const { handleEntryTriggers } = await import("../dist/tools/entry-triggers.js");
     const result = await handleEntryTriggers({
-      orgId: "quotient",
+      orgId: "acme",
       handlerFqn: "com.example.Foo",
-      env: "pdn",
+      env: "staging",
     });
     assert.equal(result.isError, undefined);
     const body = JSON.parse(result.content[0].text);
@@ -700,7 +700,7 @@ describe("MCP tool handlers", () => {
         freshnessStatus: "CURRENT",
         data: {
           serviceId: "svc-orders",
-          envLane: "pdn",
+          envLane: "staging",
           steps: [
             {
               order: 1,
@@ -751,14 +751,14 @@ describe("MCP tool handlers", () => {
   it("testseer_trace_entry_flow forwards TRG-12 chain flags", async () => {
     mockJson(
       "GET",
-      `${BASE}/v1/graph/entry-flow?serviceId=svc-sub&triggerId=t-1&includeMessaging=true&crossRepo=true&orgId=quotient&maxHops=5`,
+      `${BASE}/v1/graph/entry-flow?serviceId=svc-sub&triggerId=t-1&includeMessaging=true&crossRepo=true&orgId=acme&maxHops=5`,
       {
         freshnessStatus: "CURRENT",
         data: {
           serviceId: "svc-sub",
-          messagingTopicShortId: "PDN_T.RIQ_OFFER_EVENT",
-          messagingFlow: { topicShortId: "PDN_T.RIQ_OFFER_EVENT", steps: [{ order: 1 }] },
-          crossRepoFlow: { hops: [{ topicShortId: "PDN_T.RIQ_OFFER_EVENT" }] },
+          messagingTopicShortId: "DEV_T.ORDER_CREATED",
+          messagingFlow: { topicShortId: "DEV_T.ORDER_CREATED", steps: [{ order: 1 }] },
+          crossRepoFlow: { hops: [{ topicShortId: "DEV_T.ORDER_CREATED" }] },
           steps: [{ order: 1, trigger: { triggerKind: "PUBSUB_SUBSCRIBE" } }],
         },
       }
@@ -770,11 +770,11 @@ describe("MCP tool handlers", () => {
       triggerId: "t-1",
       includeMessaging: "true",
       crossRepo: "true",
-      orgId: "quotient",
+      orgId: "acme",
       maxHops: "5",
     });
     const body = JSON.parse(result.content[0].text);
-    assert.equal(body.data.messagingTopicShortId, "PDN_T.RIQ_OFFER_EVENT");
+    assert.equal(body.data.messagingTopicShortId, "DEV_T.ORDER_CREATED");
     assert.equal(body.data.crossRepoFlow.hops.length, 1);
   });
 
@@ -890,7 +890,7 @@ describe("MCP tool handlers", () => {
   it("testseer_trace_contract_entry_flow", async () => {
     mockJson(
       "GET",
-      `${BASE}/v1/graph/contract-entry-flow?serviceId=svc-1&operationId=redeemOffer&env=pdn`,
+      `${BASE}/v1/graph/contract-entry-flow?serviceId=svc-1&operationId=redeemOffer&env=staging`,
       {
         freshnessStatus: "CURRENT",
         data: { operationId: "redeemOffer", handlerPath: "/offers/redeem" },
@@ -901,7 +901,7 @@ describe("MCP tool handlers", () => {
     const result = await handleContractEntryFlow({
       serviceId: "svc-1",
       operationId: "redeemOffer",
-      env: "pdn",
+      env: "staging",
     });
     const body = JSON.parse(result.content[0].text);
     assert.equal(body.data.operationId, "redeemOffer");
@@ -910,15 +910,15 @@ describe("MCP tool handlers", () => {
   it("testseer_get_maven_dependencies forwards filters", async () => {
     mockJson(
       "GET",
-      `${BASE}/v1/facts/maven-dependencies?serviceId=svc-eval&scope=compile&directOnly=true&artifactId=platform-evaluation-lib`,
+      `${BASE}/v1/facts/maven-dependencies?serviceId=svc-eval&scope=compile&directOnly=true&artifactId=platform-models-lib`,
       {
         freshnessStatus: "CURRENT",
         data: {
-          modules: [{ modulePath: ".", artifactId: "transaction-eval-consumer" }],
+          modules: [{ modulePath: ".", artifactId: "orders-service" }],
           dependencies: [{
             fromModulePath: ".",
-            groupId: "com.quotient",
-            artifactId: "platform-evaluation-lib",
+            groupId: "com.example",
+            artifactId: "platform-models-lib",
             version: "2.14.0",
             scope: "compile",
             linkedServiceId: "svc-eval-lib",
@@ -932,10 +932,10 @@ describe("MCP tool handlers", () => {
       serviceId: "svc-eval",
       scope: "compile",
       directOnly: "true",
-      artifactId: "platform-evaluation-lib",
+      artifactId: "platform-models-lib",
     });
     const body = JSON.parse(result.content[0].text);
-    assert.equal(body.data.dependencies[0].artifactId, "platform-evaluation-lib");
+    assert.equal(body.data.dependencies[0].artifactId, "platform-models-lib");
   });
 
   it("testseer_get_dependency_tree returns hydrated graph", async () => {
@@ -946,7 +946,7 @@ describe("MCP tool handlers", () => {
         freshnessStatus: "CURRENT",
         data: {
           rootModulePath: ".",
-          edges: [{ from: "svc-eval::maven::.", to: "artifact::com.quotient:platform-evaluation-lib" }],
+          edges: [{ from: "svc-eval::maven::.", to: "artifact::com.example:platform-models-lib" }],
           nodes: [{ id: "svc-eval::maven::.", nodeType: "MAVEN_MODULE" }],
         },
       }

@@ -3,7 +3,7 @@ import { getContractEntryFlow, getContractGaps, getContractOperations, getContra
 export const contractOperationsTool = {
   name: "testseer_get_contract_operations",
   description:
-    "Query partner API contract operations indexed from riq-platform-apis-optimus OpenAPI specs. " +
+    "Query partner API contract operations indexed from platform-api-specs OpenAPI specs. " +
     "Filter by catalog library serviceId or implementing serviceId; optional specDomain (Offers, Rebate, etc.).",
   inputSchema: {
     type: "object" as const,
@@ -33,7 +33,7 @@ export const contractGapsTool = {
 export const contractSchemasTool = {
   name: "testseer_get_contract_schemas",
   description:
-    "Query JSON schema summaries from riq-platform-apis-optimus including nested field paths.",
+    "Query JSON schema summaries from platform-api-specs including nested field paths.",
   inputSchema: {
     type: "object" as const,
     properties: {
@@ -47,7 +47,7 @@ export const contractSchemasTool = {
 export const contractTestCoverageGapsTool = {
   name: "testseer_get_contract_test_coverage_gaps",
   description:
-    "Reconcile OpenAPI contract operations vs REST-Assured test HTTP calls indexed from riq-qa-REST-Assured.",
+    "Reconcile OpenAPI contract operations vs REST-Assured test HTTP calls indexed from qa-REST-Assured.",
   inputSchema: {
     type: "object" as const,
     properties: {

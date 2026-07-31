@@ -21,7 +21,7 @@ export const pubsubInventoryTool = {
     properties: {
       serviceId: { type: "string", description: "Registered service ID" },
       env: { type: "string", description: "Env lane: pdn, qa, prod" },
-      shortId: { type: "string", description: "Topic/sub short id e.g. PDN_T.OFFER_UPDATE" },
+      shortId: { type: "string", description: "Topic/sub short id e.g. DEV_T.ORDER_UPDATED" },
       role: { type: "string", description: "PUBLISH or SUBSCRIBE" },
       liveVerify: {
         type: "boolean",
@@ -75,7 +75,7 @@ export const flowGatesTool = {
     properties: {
       serviceId: { type: "string", description: "Registered service ID" },
       env: { type: "string", description: "Env lane" },
-      flowStep: { type: "string", description: "Flow step label from rule pack (e.g. HYVEE_ADAPTER)" },
+      flowStep: { type: "string", description: "Flow step label from rule pack (e.g. HANDLER_A)" },
     },
     required: ["serviceId"],
   },

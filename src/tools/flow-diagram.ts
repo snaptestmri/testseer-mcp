@@ -15,7 +15,7 @@ export const serviceFlowDiagramTool = {
         description:
           "Diagram anchor, e.g. handlerFqn:com.example.Consumer.onMessage or triggerId:kafka:...",
       },
-      orgId: { type: "string", description: "Organisation id (default quotient)" },
+      orgId: { type: "string", description: "Organisation id (default acme)" },
       packagePrefix: {
         type: "string",
         description: "Java package prefix to scope consumer module",
@@ -42,7 +42,7 @@ export async function handleServiceFlowDiagram(args: Record<string, string>) {
   const params = new URLSearchParams({
     serviceId,
     anchor,
-    orgId: args.orgId ?? "quotient",
+    orgId: args.orgId ?? "acme",
   });
   if (args.packagePrefix) params.set("packagePrefix", args.packagePrefix);
   if (args.depth) params.set("depth", args.depth);

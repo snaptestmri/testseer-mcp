@@ -4,7 +4,7 @@ export const entryTriggersTool = {
   name: "testseer_get_entry_triggers",
   description:
     "Query inbound entry triggers for a service — REST/webhook ingress points that can start processing " +
-    "(OIS create, Freedom payout webhook, partner adapter ingress, etc.). " +
+    "(OIS create, External payout webhook, partner adapter ingress, etc.). " +
     "Pass handlerFqn (+ orgId) for reverse impact: which triggers fan into a changed handler (TRG-13). " +
     "Distinct from outbound external endpoints.",
   inputSchema: {
@@ -12,7 +12,7 @@ export const entryTriggersTool = {
     properties: {
       orgId: {
         type: "string",
-        description: "Org id (e.g. quotient). Required with handlerFqn for reverse impact.",
+        description: "Org id (e.g. acme). Required with handlerFqn for reverse impact.",
       },
       handlerFqn: {
         type: "string",
@@ -24,7 +24,7 @@ export const entryTriggersTool = {
       },
       env: { type: "string", description: "Env lane: pdn, qa, prod" },
       triggerKind: { type: "string", description: "REST_INBOUND, WEBHOOK_INBOUND, SPRING_BOOT_MAIN, etc." },
-      actor: { type: "string", description: "Actor slug e.g. freedom, cpa, partner" },
+      actor: { type: "string", description: "Actor slug e.g. external, cpa, partner" },
       boundary: { type: "string", description: "EXTERNAL or INTERNAL" },
       includeWiring: {
         type: "string",
@@ -60,7 +60,7 @@ export const traceEntryFlowTool = {
         type: "string",
         description: "true with includeMessaging to attach cross-repo BFS trace (requires orgId or service org)",
       },
-      orgId: { type: "string", description: "Org id for crossRepo trace (e.g. quotient)" },
+      orgId: { type: "string", description: "Org id for crossRepo trace (e.g. acme)" },
       maxHops: { type: "string", description: "Max cross-repo hops (default 12)" },
       includeWiring: {
         type: "string",

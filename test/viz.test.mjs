@@ -300,7 +300,7 @@ describe("renderEntryFlow()", () => {
       steps: [
         {
           order: 1,
-          trigger: { triggerKind: "PUBSUB_SUBSCRIBE", pathPattern: "PDN_S.ORDER_CREATED" },
+          trigger: { triggerKind: "PUBSUB_SUBSCRIBE", pathPattern: "DEV_S.ORDER_CREATED" },
           reads: [],
           writes: [],
           gates: [],
@@ -352,7 +352,7 @@ describe("renderEventFlow() — pipeline (default)", () => {
   });
 
   it("returns no-services message when hops have no participants", () => {
-    const report = { hops: [{ order: 1, topicShortId: "PDN_T.FOO", publishers: [], subscribers: [] }] };
+    const report = { hops: [{ order: 1, topicShortId: "DEV_T.FOO", publishers: [], subscribers: [] }] };
     const html = renderEventFlow(report);
     assert.match(html, /No services/);
   });
@@ -367,41 +367,41 @@ describe("renderEventFlow() — pipeline (default)", () => {
     const html = renderEventFlow(report);
     assert.match(html, /entry-pipeline/);
     assert.match(html, /event-hop-card/);
-    assert.match(html, /PDN_T\.ORDER_CREATED/);
-    assert.match(html, /PDN_T\.ORDER_FULFILLED/);
+    assert.match(html, /DEV_T\.ORDER_CREATED/);
+    assert.match(html, /DEV_T\.ORDER_FULFILLED/);
     assert.doesNotMatch(html, /swimlane-table/);
   });
 
   it("renders separate pub and sub chips (not merged pub+sub)", () => {
     const report = {
-      startTopic: "PDN_T.LOOP",
+      startTopic: "DEV_T.LOOP",
       orgId: "acme",
       hops: [{
         order: 1,
-        topicShortId: "PDN_T.LOOP",
-        publishers:  [{ serviceId: "svc-a", serviceName: "svc-a", role: "PUBLISH", shortId: "PDN_T.LOOP" }],
-        subscribers: [{ serviceId: "svc-a", serviceName: "svc-a", role: "SUBSCRIBE", shortId: "PDN_S.LOOP.HANDLER" }],
+        topicShortId: "DEV_T.LOOP",
+        publishers:  [{ serviceId: "svc-a", serviceName: "svc-a", role: "PUBLISH", shortId: "DEV_T.LOOP" }],
+        subscribers: [{ serviceId: "svc-a", serviceName: "svc-a", role: "SUBSCRIBE", shortId: "DEV_S.LOOP.HANDLER" }],
       }],
     };
     const html = renderEventFlow(report);
     assert.match(html, /event-participant pub/);
     assert.match(html, /event-participant sub/);
     assert.doesNotMatch(html, /pub\+sub/);
-    assert.match(html, /PDN_S\.LOOP\.HANDLER/);
+    assert.match(html, /DEV_S\.LOOP\.HANDLER/);
   });
 
   it("shows per-subscriber consistency hints on chips", () => {
     const report = {
-      startTopic: "PDN_T.FOO",
+      startTopic: "DEV_T.FOO",
       orgId: "acme",
       hops: [{
         order: 1,
-        topicShortId: "PDN_T.FOO",
+        topicShortId: "DEV_T.FOO",
         publishers: [],
         subscribers: [{
           serviceId: "svc-a",
           serviceName: "svc-a",
-          shortId: "PDN_S.FOO.HANDLER",
+          shortId: "DEV_S.FOO.HANDLER",
           consistencyHints: [{ pattern: "DUAL_WRITE_SAME_HANDLER" }],
         }],
       }],
@@ -413,18 +413,18 @@ describe("renderEventFlow() — pipeline (default)", () => {
 
   it("renders first-hop inbound triggers as entry anchor", () => {
     const report = {
-      startTopic: "PDN_T.FOO",
+      startTopic: "DEV_T.FOO",
       orgId: "acme",
       hops: [{
         order: 1,
-        topicShortId: "PDN_T.FOO",
+        topicShortId: "DEV_T.FOO",
         publishers: [{ serviceId: "svc-a", serviceName: "svc-a" }],
         subscribers: [{
           serviceId: "svc-a",
           serviceName: "svc-a",
           inboundTriggers: [{
             triggerKind: "PUBSUB_SUBSCRIBE",
-            pathPattern: "PDN_S.FOO.ENTRY",
+            pathPattern: "DEV_S.FOO.ENTRY",
             linkedHandlerFqn: "com.example.FooHandler",
             linkedMethod: "onMessage",
           }],
@@ -439,11 +439,11 @@ describe("renderEventFlow() — pipeline (default)", () => {
 
   it("renders terminal continuation cards", () => {
     const report = {
-      startTopic: "PDN_T.FOO",
+      startTopic: "DEV_T.FOO",
       orgId: "acme",
       hops: [{
         order: 1,
-        topicShortId: "PDN_T.FOO",
+        topicShortId: "DEV_T.FOO",
         publishers: [{ serviceId: "svc-a", serviceName: "svc-a" }],
         subscribers: [],
         terminalContinuations: [{
@@ -461,7 +461,7 @@ describe("renderEventFlow() — pipeline (default)", () => {
   it("renders hop-scoped gaps on the hop card", () => {
     const report = {
       ...makeTwoHopReport(),
-      gaps: [{ gapType: "TERMINAL_BATCH_RETRY", description: "PDN_T.ORDER_CREATED terminal" }],
+      gaps: [{ gapType: "TERMINAL_BATCH_RETRY", description: "DEV_T.ORDER_CREATED terminal" }],
     };
     const html = renderEventFlow(report);
     assert.match(html, /event-hop-gaps/);
@@ -477,11 +477,11 @@ describe("renderEventFlow() — pipeline (default)", () => {
 
   it("escapes HTML in topic short IDs", () => {
     const report = {
-      startTopic: "PDN_T.<XSS>",
+      startTopic: "DEV_T.<XSS>",
       orgId: "acme",
       hops: [{
         order: 1,
-        topicShortId: "PDN_T.<XSS>",
+        topicShortId: "DEV_T.<XSS>",
         publishers: [{ serviceId: "svc-a", serviceName: "svc-a" }],
         subscribers: [],
       }],
@@ -508,8 +508,8 @@ describe("renderEventFlow() — matrix view", () => {
     const report = makeTwoHopReport();
     const html = renderEventFlow(report, "matrix");
     assert.match(html, /swimlane-table/);
-    assert.match(html, /PDN_T\.ORDER_CREATED/);
-    assert.match(html, /PDN_T\.ORDER_FULFILLED/);
+    assert.match(html, /DEV_T\.ORDER_CREATED/);
+    assert.match(html, /DEV_T\.ORDER_FULFILLED/);
   });
 
   it("renders a row per unique service in matrix mode", () => {
@@ -536,13 +536,13 @@ describe("renderEventFlow() — matrix view", () => {
 
   it("marks pub+sub as separate matrix chips in matrix mode", () => {
     const report = {
-      startTopic: "PDN_T.LOOP",
+      startTopic: "DEV_T.LOOP",
       orgId: "acme",
       hops: [{
         order: 1,
-        topicShortId: "PDN_T.LOOP",
-        publishers:  [{ serviceId: "svc-a", serviceName: "svc-a", role: "PUBLISH", shortId: "PDN_T.LOOP" }],
-        subscribers: [{ serviceId: "svc-a", serviceName: "svc-a", role: "SUBSCRIBE", shortId: "PDN_S.LOOP.HANDLER" }],
+        topicShortId: "DEV_T.LOOP",
+        publishers:  [{ serviceId: "svc-a", serviceName: "svc-a", role: "PUBLISH", shortId: "DEV_T.LOOP" }],
+        subscribers: [{ serviceId: "svc-a", serviceName: "svc-a", role: "SUBSCRIBE", shortId: "DEV_S.LOOP.HANDLER" }],
       }],
     };
     const html = renderEventFlow(report, "matrix");
@@ -589,7 +589,7 @@ describe("buildEventFlowGraphModel()", () => {
 
   it("creates topic and participant nodes per hop", () => {
     const model = buildEventFlowGraphModel(makeTwoHopReport());
-    assert.ok(model.nodes.some(n => n.type === "topic" && n.label === "PDN_T.ORDER_CREATED"));
+    assert.ok(model.nodes.some(n => n.type === "topic" && n.label === "DEV_T.ORDER_CREATED"));
     assert.ok(model.nodes.filter(n => n.type === "publisher").length >= 2);
     assert.ok(model.nodes.filter(n => n.type === "subscriber").length >= 2);
   });
@@ -610,18 +610,18 @@ describe("buildEventFlowGraphModel()", () => {
 
   it("collapses entry triggers into one anchor node", () => {
     const report = {
-      startTopic: "PDN_T.FOO",
+      startTopic: "DEV_T.FOO",
       orgId: "acme",
       hops: [{
         order: 1,
-        topicShortId: "PDN_T.FOO",
+        topicShortId: "DEV_T.FOO",
         publishers: [{ serviceId: "svc-a", serviceName: "svc-a" }],
         subscribers: [{
           serviceId: "svc-a",
           serviceName: "svc-a",
           inboundTriggers: [
-            { triggerId: "t1", triggerKind: "PUBSUB_SUBSCRIBE", pathPattern: "PDN_S.A" },
-            { triggerId: "t2", triggerKind: "PUBSUB_SUBSCRIBE", pathPattern: "PDN_S.B" },
+            { triggerId: "t1", triggerKind: "PUBSUB_SUBSCRIBE", pathPattern: "DEV_S.A" },
+            { triggerId: "t2", triggerKind: "PUBSUB_SUBSCRIBE", pathPattern: "DEV_S.B" },
           ],
         }],
       }],
@@ -650,21 +650,21 @@ describe("renderMatrixCell()", () => {
 
   it("renders stacked pub and sub chips", () => {
     const html = renderMatrixCell(
-      [{ serviceId: "a", serviceName: "svc-a", shortId: "PDN_T.FOO" }],
-      [{ serviceId: "a", serviceName: "svc-a", shortId: "PDN_S.FOO.HANDLER" }],
-      "PDN_T.FOO",
+      [{ serviceId: "a", serviceName: "svc-a", shortId: "DEV_T.FOO" }],
+      [{ serviceId: "a", serviceName: "svc-a", shortId: "DEV_S.FOO.HANDLER" }],
+      "DEV_T.FOO",
       null
     );
     assert.match(html, /matrix-chip pub/);
     assert.match(html, /matrix-chip sub/);
-    assert.match(html, /PDN_S\.FOO\.HANDLER/);
+    assert.match(html, /DEV_S\.FOO\.HANDLER/);
   });
 
   it("dims chips when focus service does not match", () => {
     const html = renderMatrixCell(
       [{ serviceId: "other", serviceName: "other" }],
       [],
-      "PDN_T.FOO",
+      "DEV_T.FOO",
       "svc-focus"
     );
     assert.match(html, /event-dimmed/);
@@ -680,7 +680,7 @@ describe("renderEventFlowFactsExtra()", () => {
   it("renders proto field table from payloadFields JSON", () => {
     const html = renderEventFlowFactsExtra([{
       direction: "INBOUND",
-      payloadProto: "RIQOfferEvent",
+      payloadProto: "OfferEvent",
       payloadFields: JSON.stringify([
         { name: "offerId", type: "string", number: "1", repeated: "false" },
         { name: "partnerId", type: "int32", number: "2", repeated: "false" },
@@ -688,7 +688,7 @@ describe("renderEventFlowFactsExtra()", () => {
       linkedClassFqn: "com.example.Handler",
     }], [], "com.example.Handler");
     assert.match(html, /Message schema/);
-    assert.match(html, /RIQOfferEvent/);
+    assert.match(html, /OfferEvent/);
     assert.match(html, /proto-fields/);
     assert.match(html, /offerId/);
     assert.match(html, /partnerId/);
@@ -734,28 +734,28 @@ describe("renderEventFlowFactsExtra()", () => {
 
 function makeTwoHopReport() {
   return {
-    startTopic: "PDN_T.ORDER_CREATED",
+    startTopic: "DEV_T.ORDER_CREATED",
     orgId: "acme",
     envLane: "pdn",
     hops: [
       {
         order: 1,
-        topicShortId: "PDN_T.ORDER_CREATED",
+        topicShortId: "DEV_T.ORDER_CREATED",
         publishers: [
-          { serviceId: "svc-orders", serviceName: "orders-svc", role: "PUBLISH", shortId: "PDN_T.ORDER_CREATED" },
+          { serviceId: "svc-orders", serviceName: "orders-svc", role: "PUBLISH", shortId: "DEV_T.ORDER_CREATED" },
         ],
         subscribers: [
-          { serviceId: "svc-fulfillment", serviceName: "fulfillment-svc", role: "SUBSCRIBE", shortId: "PDN_S.ORDER_CREATED.FULFILL" },
+          { serviceId: "svc-fulfillment", serviceName: "fulfillment-svc", role: "SUBSCRIBE", shortId: "DEV_S.ORDER_CREATED.FULFILL" },
         ],
       },
       {
         order: 2,
-        topicShortId: "PDN_T.ORDER_FULFILLED",
+        topicShortId: "DEV_T.ORDER_FULFILLED",
         publishers: [
-          { serviceId: "svc-fulfillment", serviceName: "fulfillment-svc", role: "PUBLISH", shortId: "PDN_T.ORDER_FULFILLED" },
+          { serviceId: "svc-fulfillment", serviceName: "fulfillment-svc", role: "PUBLISH", shortId: "DEV_T.ORDER_FULFILLED" },
         ],
         subscribers: [
-          { serviceId: "svc-notify", serviceName: "notify-svc", role: "SUBSCRIBE", shortId: "PDN_S.ORDER_FULFILLED.NOTIFY" },
+          { serviceId: "svc-notify", serviceName: "notify-svc", role: "SUBSCRIBE", shortId: "DEV_S.ORDER_FULFILLED.NOTIFY" },
         ],
       },
     ],
